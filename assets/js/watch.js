@@ -1,13 +1,17 @@
 
 function useWatch(value) {
-  const data = { value };
+  const data = {
+    current: value,
+    previous: value
+  };
   
   const watchers = [];
   
   function update(callback) {
-    data.value = callback(data.value);
+    data.previous = data.current;
+    data.current = callback(data.current);
     watchers.forEach(watcher => {
-      watcher(data.value);
+      watcher(data.current, data.previous);
     });
   }
 
@@ -16,7 +20,7 @@ function useWatch(value) {
       watchers.push(watcher);
     }
     if (immediate) {
-      watcher(data.value);
+      watcher(data.current, data.previous);
     }
   }
 
@@ -27,7 +31,7 @@ function useWatch(value) {
 
   Object.defineProperty(rv, "value", {
     get() {
-      return data.value;
+      return data.current;
     }
   });
 

@@ -5,6 +5,8 @@ import { delay } from "./delay.js";
 
 import * as gameData from "../../private/game-data.js";
 
+const DISABLE_DELAY = true;
+
 const VALID_STATES = gameData.panelConfig.map((data) => data.key);
 
 const VISITED_PANELS = {};
@@ -19,10 +21,10 @@ const gameHistory = useWatch([
 const gamePosition = useWatch(0);
 const renderPanelBusy = useWatch(false);
 
-gameAchievements.watch(async (achievements) => {
-  if (Object.values(achievements).every((achievement) => achievement.complete)) {
+gameAchievements.watch(async (current, previous) => {
+  if (Object.values(current).every((achievement) => achievement.complete)) {
     elem(".game-achievement", children(
-      ...Object.values(achievements).map((achievement) => elem(
+      ...Object.values(current).map((achievement) => elem(
         "<div>",
         text(achievement.letter),
         attrs({
@@ -30,13 +32,14 @@ gameAchievements.watch(async (achievements) => {
         }),
         className(
           "game-achievement__item",
-          "game-achievement__item--complete"
+          "game-achievement__item--complete",
+          "game-achievement__item--complete-victory"
         ),
       ))
     ))
   } else {
     elem(".game-achievement", children(
-      ...Object.values(achievements).map((achievement) => elem(
+      ...Object.entries(current).map(([achievementName, achievement]) => elem(
         "<div>",
         attrs({
           title: achievement.complete
@@ -46,6 +49,7 @@ gameAchievements.watch(async (achievements) => {
         className(
           "game-achievement__item",
           achievement.complete && "game-achievement__item--complete",
+          achievement.complete && !previous[achievementName].complete && "game-achievement__item--complete-fresh"
         ),
       ))
     ))
@@ -86,7 +90,10 @@ async function renderPanel({
   renderPanelBusy.update(() => false);
 
   async function panelDelay(millis) {
-    if (false || !VISITED_PANELS[panelKey]) {
+    if (DISABLE_DELAY) {
+      return;
+    }
+    if (!VISITED_PANELS[panelKey]) {
       await delay(millis);
     } 
   }

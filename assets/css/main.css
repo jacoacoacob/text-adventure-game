@@ -78,6 +78,13 @@ button:disabled {
 .game-achievement__item--complete {
   background-color: #2cb8c7;
 }
+.game-achievement__item--complete-fresh {
+  animation: achievement-unlocked .5s ease-in-out;
+}
+.game-achievement__item--complete-victory {
+  animation: victory .5s ease-in-out;
+
+}
 .game__panel-title {
   background-color: #113;
   color: var(--clr-gray-1);
@@ -115,4 +122,22 @@ button:disabled {
   opacity: 0.9;
   box-shadow: 4px 4px var(--clr-blue-1),
               8px 8px var(--clr-blue-2);
+}
+
+@keyframes achievement-unlocked {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(2.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes victory {
+  100% {
+    transform: rotate(720deg);
+  }
 }
