@@ -33,6 +33,9 @@ button {
   font-weight: bold;
   font-family: 'Courier New', Courier, monospace;
 }
+button:disabled {
+  cursor: auto;
+}
 
 .game-wrapper {
   min-height: 100vh;

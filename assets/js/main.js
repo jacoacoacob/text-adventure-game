@@ -7,6 +7,8 @@ import gameData from "../../private/game-data.js";
 
 const VALID_STATES = gameData.map((data) => data.key);
 
+const VISITED = {};
+
 const gameHistory = useWatch([
   {
     panelKey: "",
@@ -16,7 +18,16 @@ const gameHistory = useWatch([
 const gamePosition = useWatch(0);
 const renderPanelBusy = useWatch(false);
 
-async function renderPanel({ panelKey, title, instructions, choices = {} } = {}) {
+async function renderPanel({
+  panelKey,
+  title = "",
+  instructions = "",
+  prize = null,
+  choices = {}
+} = {}) {
+  if (prize) {
+    alert(JSON.stringify(prize))
+  }
 
   const choiceKeys = Object.keys(choices);
   const gameChoices = elem(".game__choices", children());
@@ -24,16 +35,25 @@ async function renderPanel({ panelKey, title, instructions, choices = {} } = {})
 
   elem(".game__panel-title", text(title));
 
+  console.log(VISITED)
+
   renderPanelBusy.update(() => true);
   await renderInstructions();
-  await delay(100);
+  if (!VISITED[panelKey]) {
+    await delay(100);
+  }
   await renderChoices();
   renderPanelBusy.update(() => false);
+
+
+  VISITED[panelKey] = true;
   
   async function renderInstructions(charIdx = 0) {
     if (charIdx > instructions.length - 1) return;
     gameInstructions.textContent += instructions[charIdx];
-    await delay(16);
+    if (!VISITED[panelKey]) {
+      await delay(16);
+    }
     await renderInstructions(charIdx + 1);
   }
 
@@ -68,15 +88,18 @@ async function renderPanel({ panelKey, title, instructions, choices = {} } = {})
         })
       )
     )
-    await delay(25);
+    if (!VISITED[panelKey]) {
+      await delay(25);
+    }
     await renderChoices(choiceKeyIdex + 1);
   }
 }
 
-function panel({ key, title, instructions, choices } = {}) {
+function panel({ key, title, instructions, choices, prize } = {}) {
   return {
     [key]() {
       renderPanel({
+        prize,
         choices,
         title,
         instructions,
