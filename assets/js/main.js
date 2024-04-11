@@ -3,12 +3,13 @@ import { createStateMachine } from "./state.js"
 import { useWatch } from "./watch.js"
 import { delay } from "./delay.js";
 
-import gameData from "../../private/game-data.js";
+import * as gameData from "../../private/game-data.js";
 
-const VALID_STATES = gameData.map((data) => data.key);
+const VALID_STATES = gameData.panelConfig.map((data) => data.key);
 
-const VISITED = {};
+const VISITED_PANELS = {};
 
+const gameAchievements = useWatch(gameData.achievements);
 const gameHistory = useWatch([
   {
     panelKey: "",
@@ -18,6 +19,27 @@ const gameHistory = useWatch([
 const gamePosition = useWatch(0);
 const renderPanelBusy = useWatch(false);
 
+gameAchievements.watch(async (achievements) => {
+  if (Object.values(achievements).every((achievement) => achievement.complete)) {
+
+  } else {
+    elem(".game-achievement", children(
+      ...Object.values(achievements).map((achievement) => elem(
+        "<div>",
+        attrs({
+          title: achievement.complete
+            ? achievement.description
+            : "You haven't completed this achievemnt yet",
+        }),
+        className(
+          "game-achievement__item",
+          achievement.complete && "game-achievement__item--complete",
+        ),
+      ))
+    ))
+  }
+}, true);
+
 async function renderPanel({
   panelKey,
   title = "",
@@ -25,8 +47,18 @@ async function renderPanel({
   prize = null,
   choices = {}
 } = {}) {
-  if (prize) {
-    alert(JSON.stringify(prize))
+  const _instructions = instructions.trim();
+
+  if (prize && !gameAchievements.value[prize].complete) {
+    gameAchievements.update((achievements) => {
+      return {
+        ...achievements,
+        [prize]: {
+          ...achievements[prize],
+          complete: true,
+        },
+      };
+    });
   }
 
   const choiceKeys = Object.keys(choices);
@@ -35,25 +67,24 @@ async function renderPanel({
 
   elem(".game__panel-title", text(title));
 
-  console.log(VISITED)
-
   renderPanelBusy.update(() => true);
   await renderInstructions();
-  if (!VISITED[panelKey]) {
-    await delay(100);
-  }
+  await panelDelay(100);
   await renderChoices();
   renderPanelBusy.update(() => false);
 
+  async function panelDelay(millis) {
+    if (true || !VISITED_PANELS[panelKey]) {
+      await delay(millis);
+    } 
+  }
 
-  VISITED[panelKey] = true;
+  VISITED_PANELS[panelKey] = true;
   
   async function renderInstructions(charIdx = 0) {
-    if (charIdx > instructions.length - 1) return;
-    gameInstructions.textContent += instructions[charIdx];
-    if (!VISITED[panelKey]) {
-      await delay(16);
-    }
+    if (charIdx > _instructions.length - 1) return;
+    gameInstructions.textContent += _instructions[charIdx];
+    await panelDelay(16)
     await renderInstructions(charIdx + 1);
   }
 
@@ -88,9 +119,7 @@ async function renderPanel({
         })
       )
     )
-    if (!VISITED[panelKey]) {
-      await delay(25);
-    }
+    await panelDelay(25)
     await renderChoices(choiceKeyIdex + 1);
   }
 }
@@ -111,7 +140,7 @@ function panel({ key, title, instructions, choices, prize } = {}) {
 
 const gameState = createStateMachine({
   current: "start",
-  transitions: gameData.reduce(
+  transitions: gameData.panelConfig.reduce(
     (accum, panelConfig) => ({ ...accum, ...panel(panelConfig) }),
     {}
   ),
