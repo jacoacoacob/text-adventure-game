@@ -21,7 +21,19 @@ const renderPanelBusy = useWatch(false);
 
 gameAchievements.watch(async (achievements) => {
   if (Object.values(achievements).every((achievement) => achievement.complete)) {
-
+    elem(".game-achievement", children(
+      ...Object.values(achievements).map((achievement) => elem(
+        "<div>",
+        text(achievement.letter),
+        attrs({
+          title: gameData.finalPrize,
+        }),
+        className(
+          "game-achievement__item",
+          "game-achievement__item--complete"
+        ),
+      ))
+    ))
   } else {
     elem(".game-achievement", children(
       ...Object.values(achievements).map((achievement) => elem(
@@ -43,18 +55,18 @@ gameAchievements.watch(async (achievements) => {
 async function renderPanel({
   panelKey,
   title = "",
-  instructions = "",
-  prize = null,
+  narration = "",
+  achievement = null,
   choices = {}
 } = {}) {
-  const _instructions = instructions.trim();
+  const _narration = narration.trim();
 
-  if (prize && !gameAchievements.value[prize].complete) {
+  if (achievement && !gameAchievements.value[achievement].complete) {
     gameAchievements.update((achievements) => {
       return {
         ...achievements,
-        [prize]: {
-          ...achievements[prize],
+        [achievement]: {
+          ...achievements[achievement],
           complete: true,
         },
       };
@@ -74,7 +86,7 @@ async function renderPanel({
   renderPanelBusy.update(() => false);
 
   async function panelDelay(millis) {
-    if (true || !VISITED_PANELS[panelKey]) {
+    if (false || !VISITED_PANELS[panelKey]) {
       await delay(millis);
     } 
   }
@@ -82,8 +94,8 @@ async function renderPanel({
   VISITED_PANELS[panelKey] = true;
   
   async function renderInstructions(charIdx = 0) {
-    if (charIdx > _instructions.length - 1) return;
-    gameInstructions.textContent += _instructions[charIdx];
+    if (charIdx > _narration.length - 1) return;
+    gameInstructions.textContent += _narration[charIdx];
     await panelDelay(16)
     await renderInstructions(charIdx + 1);
   }
@@ -124,14 +136,14 @@ async function renderPanel({
   }
 }
 
-function panel({ key, title, instructions, choices, prize } = {}) {
+function panel({ key, title, narration, choices, achievement } = {}) {
   return {
     [key]() {
       renderPanel({
-        prize,
+        achievement,
         choices,
         title,
-        instructions,
+        narration,
         panelKey: key,
       });
     }

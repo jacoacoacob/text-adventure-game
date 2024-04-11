@@ -70,6 +70,10 @@ button:disabled {
   width: 20px;
   background-color: #11575d;
   border: 1px solid salmon;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #113;
 }
 .game-achievement__item--complete {
   background-color: #2cb8c7;
