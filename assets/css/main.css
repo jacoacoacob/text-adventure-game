@@ -57,13 +57,18 @@ button {
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
 }
+.game__panel-title {
+  background-color: #113;
+  color: var(--clr-gray-1);
+  padding: 8px 16px;
+  font-size: 18px;
+}
 .game__instructions {
   background-color: #113;
   color: var(--clr-gray-1);
   min-height: 60px;
+  line-height: 1.5;
   padding: 16px;
-  /* display: flex; */
-  /* flex-wrap: wrap; */
   white-space: pre-line;
 }
 .game__choices {

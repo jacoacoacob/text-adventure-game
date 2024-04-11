@@ -5,6 +5,8 @@ import { delay } from "./delay.js";
 
 import gameData from "../../private/game-data.js";
 
+const VALID_STATES = gameData.map((data) => data.key);
+
 const gameHistory = useWatch([
   {
     panelKey: "",
@@ -14,11 +16,13 @@ const gameHistory = useWatch([
 const gamePosition = useWatch(0);
 const renderPanelBusy = useWatch(false);
 
-async function renderPanel({ panelKey, instructions, choices = {} } = {}) {
+async function renderPanel({ panelKey, title, instructions, choices = {} } = {}) {
 
   const choiceKeys = Object.keys(choices);
   const gameChoices = elem(".game__choices", children());
   const gameInstructions = elem(".game__instructions", text())
+
+  elem(".game__panel-title", text(title));
 
   renderPanelBusy.update(() => true);
   await renderInstructions();
@@ -45,6 +49,10 @@ async function renderPanel({ panelKey, instructions, choices = {} } = {}) {
         text(choiceText),     
         listen({
           click: () => {
+            if (!VALID_STATES.includes(choiceKey)) {
+              console.warn("No game state registered for choice", choiceKey);
+              return;
+            }
             gameHistory.update(history => {
               const event = { panelKey, state: choiceKey };
               const indexOfPanelKey = history.findIndex(
@@ -65,11 +73,12 @@ async function renderPanel({ panelKey, instructions, choices = {} } = {}) {
   }
 }
 
-function panel({ key, instructions, choices } = {}) {
+function panel({ key, title, instructions, choices } = {}) {
   return {
     [key]() {
       renderPanel({
         choices,
+        title,
         instructions,
         panelKey: key,
       });
@@ -77,32 +86,17 @@ function panel({ key, instructions, choices } = {}) {
   }
 }
 
-const gamePanelState = createStateMachine({
+const gameState = createStateMachine({
   current: "start",
-  transitions: gameData.reduce((accum, panelConfig) => ({
-    ...accum,
-    ...panel(panelConfig)
-  }), {}),
-  // transitions: {
-  //   ...panel({
-  //     key: "start",
-  //     title: "Hello!",
-  //     instructions: "Happy Birthday Candace!",
-  //     choices: {
-  //       the_woods: "Go to the woods",
-  //     }
-  //   }),
-  //   ...panel({
-  //     key: "the_woods",
-  //     title: "The Woods",
-  //     instructions: "Welcome to the woods"
-  //   })
-  // }
+  transitions: gameData.reduce(
+    (accum, panelConfig) => ({ ...accum, ...panel(panelConfig) }),
+    {}
+  ),
 })
 
 gamePosition.watch((position) => {
   const history = gameHistory.value;
-  gamePanelState.setState(history[position].state);
+  gameState.setState(history[position].state);
   elem("#btn-forward").disabled = renderPanelBusy.value || position === history.length - 1;
   elem("#btn-back").disabled = renderPanelBusy.value || position === 0
 }, true);
