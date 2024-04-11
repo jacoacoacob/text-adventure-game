@@ -1,0 +1,28 @@
+:root {
+  --size-1: 0.125rem;
+  --size-2: 0.25rem;
+  --size-3: 0.5rem;
+  --size-4: 0.75rem;
+  --size-5: 1rem;
+  --size-6: 1.25rem;
+  --size-7: 1.5rem;
+  --size-8: 1.75rem;
+  --size-9: 2rem;
+  --size-10: 3rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}

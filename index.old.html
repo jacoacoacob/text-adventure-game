@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Message</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+    main {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    button {
+      font: inherit;
+    }
+    #btn-progress {
+      position: absolute;
+      top: 0;
+      transform: scaleY(0);
+      height: 100%;
+      width: 100%;
+      border-radius: 4px;
+      background-color: black;
+    }
+    #btn-text {
+      position: relative;
+    }
+    #btn {
+      position: relative;
+      height: 50px;
+      width: 150px;
+      padding: 0;
+      margin-top: 20vh;
+      border-radius: 4px;
+      border: 1px solid black;
+      cursor: pointer;
+    }
+    #btn:disabled {
+      cursor: auto;
+    }
+    #message {
+      flex: 1;
+      padding: 32px;
+      max-width: 300px;
+      font-size: large;
+    }
+  </style>
+  <script type="module">
+    // const MESSAGE = [
+    //   89, 89, 89, 89, 
+    // ]
+
+    const MESSAGE = `Helllloo`
+
+    const qs = s => document.querySelector(s)
+
+    const msg = qs('#message')
+    const btn = qs('#btn')
+    const btnText = qs('#btn-text')
+    const btnProgress = qs('#btn-progress')
+
+    let complete = false
+    btn.addEventListener("click", async () => {
+      if (complete) {
+        while (msg.lastChild) { msg.removeChild(msg.lastChild) }
+        complete = false
+        btnProgress.style.transform = `scaleY(0)`
+        btnText.style.color = 'unset'
+        btnText.textContent = 'Reveal Message'
+      } else {
+        btn.disabled = true
+        btnText.style.color = 'white'
+        btnText.textContent = ''
+        await translatePre()
+        btn.disabled = false
+        complete = true
+        btnText.textContent = 'Reset'
+      }
+    })
+
+    async function translatePre(i = 0) {
+      if (i > MESSAGE.length - 1) return
+      const scale = Math.floor(i / MESSAGE.length * 100) / 100
+      btnProgress.style.transform = `scaleY(${scale})`
+      msg.textContent += MESSAGE[i]
+      await new Promise((resolve) => { setTimeout(resolve, 75) })
+      await translatePre(i + 1)
+    }
+
+  </script>
+</head>
+<body>
+  <main>
+    <button id="btn">
+      <div id="btn-progress"></div>
+      <div id="btn-text">Reveal Message</div>
+    </button>
+    <pre id="message"></pre>
+  </main>
+</body>
+</html>

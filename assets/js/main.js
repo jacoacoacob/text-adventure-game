@@ -1,0 +1,131 @@
+import { attrs, children, className, elem, listen, style, text } from "./elem.js"
+import { createStateMachine } from "./state.js"
+import { useWatch } from "./watch.js"
+import { delay } from "./delay.js";
+
+import gameData from "../../private/game-data.js";
+
+const gameHistory = useWatch([
+  {
+    panelKey: "",
+    state: "start",
+  },
+]);
+const gamePosition = useWatch(0);
+const renderPanelBusy = useWatch(false);
+
+async function renderPanel({ panelKey, instructions, choices = {} } = {}) {
+
+  const choiceKeys = Object.keys(choices);
+  const gameChoices = elem(".game__choices", children());
+  const gameInstructions = elem(".game__instructions", text())
+
+  renderPanelBusy.update(() => true);
+  await renderInstructions();
+  await delay(100);
+  await renderChoices();
+  renderPanelBusy.update(() => false);
+  
+  async function renderInstructions(charIdx = 0) {
+    if (charIdx > instructions.length - 1) return;
+    gameInstructions.textContent += instructions[charIdx];
+    await delay(16);
+    await renderInstructions(charIdx + 1);
+  }
+
+  async function renderChoices(choiceKeyIdex = 0) {
+    if (choiceKeyIdex > choiceKeys.length - 1) return;
+    const choiceKey = choiceKeys[choiceKeyIdex];
+    const choiceText = choices[choiceKey];
+    gameChoices.append(
+      elem(
+        "<li>",
+        attrs({ role: "button" }),
+        className("game__choices-choice"),
+        text(choiceText),     
+        listen({
+          click: () => {
+            gameHistory.update(history => {
+              const event = { panelKey, state: choiceKey };
+              const indexOfPanelKey = history.findIndex(
+                x => x.panelKey === panelKey
+              );
+              if (indexOfPanelKey > -1) {
+                return history.slice(0, indexOfPanelKey).concat(event);
+              }
+              return history.concat(event);
+            });
+            gamePosition.update(() => gameHistory.value.length - 1);
+          },
+        })
+      )
+    )
+    await delay(25);
+    await renderChoices(choiceKeyIdex + 1);
+  }
+}
+
+function panel({ key, instructions, choices } = {}) {
+  return {
+    [key]() {
+      renderPanel({
+        choices,
+        instructions,
+        panelKey: key,
+      });
+    }
+  }
+}
+
+const gamePanelState = createStateMachine({
+  current: "start",
+  transitions: gameData.reduce((accum, panelConfig) => ({
+    ...accum,
+    ...panel(panelConfig)
+  }), {}),
+  // transitions: {
+  //   ...panel({
+  //     key: "start",
+  //     title: "Hello!",
+  //     instructions: "Happy Birthday Candace!",
+  //     choices: {
+  //       the_woods: "Go to the woods",
+  //     }
+  //   }),
+  //   ...panel({
+  //     key: "the_woods",
+  //     title: "The Woods",
+  //     instructions: "Welcome to the woods"
+  //   })
+  // }
+})
+
+gamePosition.watch((position) => {
+  const history = gameHistory.value;
+  gamePanelState.setState(history[position].state);
+  elem("#btn-forward").disabled = renderPanelBusy.value || position === history.length - 1;
+  elem("#btn-back").disabled = renderPanelBusy.value || position === 0
+}, true);
+
+renderPanelBusy.watch((busy) => {
+  const history = gameHistory.value;
+  const position = gamePosition.value;
+  elem("#btn-forward").disabled = busy || position === history.length - 1;
+  elem("#btn-back").disabled = busy || position === 0
+});
+
+elem("#btn-back", listen({
+  click: () => {
+    gamePosition.update(
+      (current) => Math.max(current - 1, 0)
+    );
+  }
+}));
+
+elem("#btn-forward", listen({
+  click: () => {
+    gamePosition.update(
+      (current) => Math.min(current + 1, gameHistory.value.length - 1)
+    );
+  }
+}));
