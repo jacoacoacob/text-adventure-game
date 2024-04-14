@@ -5,7 +5,7 @@ import { delay } from "./delay.js";
 
 import * as gameData from "../../private/game-data.js";
 
-const DISABLE_DELAY = true;
+const DISABLE_DELAY = false;
 
 const VALID_STATES = gameData.panelConfig.map((data) => data.key);
 

@@ -1,3 +1,4 @@
+
 :root {
   --clr-pink-1: hsl(312, 88%, 54%);
   --clr-pink-2: hsl(311, 94%, 93%);
@@ -21,10 +22,8 @@ body {
     #11575d,
     #50898f,
     #2cb8c7
-
   );
-  font-family: 'Courier New', Courier, monospace;
-  font-weight: bold;
+  font-family: 'M PLUS 1 Code', monospace;
 }
 
 button {
@@ -79,17 +78,18 @@ button:disabled {
   background-color: #2cb8c7;
 }
 .game-achievement__item--complete-fresh {
-  animation: achievement-unlocked .5s ease-in-out;
+  animation: achievement-unlocked .75s ease-in-out;
 }
 .game-achievement__item--complete-victory {
-  animation: victory .5s ease-in-out;
+  animation: victory .75s ease-in-out;
 
 }
 .game__panel-title {
   background-color: #113;
   color: var(--clr-gray-1);
   padding: 8px 16px;
-  font-size: 18px;
+  font-size: 1.25rem;
+  font-weight: 500;
 }
 .game__instructions {
   background-color: #113;
