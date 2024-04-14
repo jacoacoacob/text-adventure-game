@@ -44,6 +44,18 @@ button:disabled {
   padding: 16px;
 }
 
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  min-height: 60vh;
+  width: 700px;
+  background-color: #113;
+  background-color: var(--clr-cadet-blue-2);
+}
+
 .game {
   display: flex;
   flex-direction: column;

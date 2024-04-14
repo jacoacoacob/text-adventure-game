@@ -11,15 +11,42 @@ const VALID_STATES = gameData.panelConfig.map((data) => data.key);
 
 const VISITED_PANELS = {};
 
+
 const gameAchievements = useWatch(gameData.achievements);
-const gameHistory = useWatch([
-  {
-    panelKey: "",
-    state: "start",
-  },
-]);
+const gameHistory = useWatch([]);
 const gamePosition = useWatch(0);
 const renderPanelBusy = useWatch(false);
+
+
+setupWelcomeScreen();
+
+function setupWelcomeScreen() {
+  elem(".game", style({ display: "none" }));
+
+  elem(".game-wrapper").append(elem(
+    "<div>",
+    className("welcome-screen"),
+    children(
+      elem("<button>",
+        text("Start"),
+        listen({
+          click: () => {
+            elem(".welcome-screen", style({ display: "none", }));
+            elem(".game", style({ display: "flex" }))
+            gameHistory.update(() => [
+              {
+                panelKey: "",
+                state: "start",
+              },
+            ]);
+            gamePosition.update(() => 0)
+          }
+        })
+      )
+    )
+  ))
+}
+
 
 gameAchievements.watch(async (current, previous) => {
   if (Object.values(current).every((achievement) => achievement.complete)) {
@@ -170,7 +197,7 @@ gamePosition.watch((position) => {
   gameState.setState(history[position].state);
   elem("#btn-forward").disabled = renderPanelBusy.value || position === history.length - 1;
   elem("#btn-back").disabled = renderPanelBusy.value || position === 0
-}, true);
+});
 
 renderPanelBusy.watch((busy) => {
   const history = gameHistory.value;
